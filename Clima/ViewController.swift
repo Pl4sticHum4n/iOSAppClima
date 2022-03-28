@@ -17,6 +17,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     var climaManager = ClimaManager()
     override func viewDidLoad() {
         super.viewDidLoad()
+        climaManager.delegado = self
         // Do any additional setup after loading the view.
         nombreUbicacion.delegate = self
     }
@@ -69,3 +70,17 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //https://api.openweathermap.org/data/2.5/weather?lat=19.710237&lon=-101.221211&appid=0a696aadac328d0ed56eb111d05da9f1&units=metric&lang=sp
 //Buscar por nombre de ubicacion
 //https://api.openweathermap.org/data/2.5/weather?q=Siberia&appid=0a696aadac328d0ed56eb111d05da9f1&units=metric&lang=sp
+
+// MARK: climamanager delegado y sus mètodos para actualizar clima y mostrar el error
+extension ViewController: ClimaManagerDelegado{
+    func actualizarClima(objClima: ClimaModelo) {
+        print("Se actualizo el clima")
+        print(objClima.temperaturaString)
+    }
+    
+    func huboError(error: Error) {
+        print("Hubo error")
+    }
+    
+    
+}

@@ -2,8 +2,17 @@
 
 import Foundation
 
+protocol ClimaManagerDelegado {
+    
+    func actualizarClima(objClima: ClimaModelo)
+    
+    func huboError(error: Error)
+}
+
 struct ClimaManager {
     let climaUrl = "https://api.openweathermap.org/data/2.5/weather?&appid=fb540c21323ed122505ce242df21b704&units=metric&lang=es"
+    
+    var delegado: ClimaManagerDelegado?
     
     func obtenerClima(nombreCiudad: String) {
         let urlString = "\(climaUrl)&q=\(nombreCiudad)"
@@ -12,30 +21,48 @@ struct ClimaManager {
     func  realizarSolicitud(urlString: String) {
         //crear url
         if let url = URL(string: urlString){
-            
-        
         //crear url sesion
         let sesion = URLSession(configuration: .default)
-        
         //asignar una tarea
-        let tarea = sesion.dataTask(with: url,completionHandler: controladorFinalizacion(datos:respuesta:error:))
+        let tarea = sesion.dataTask(with: url) { (datos, respuesta, error) in
+            if error != nil {
+                delegado?.huboError(error: error as! Error)
+                print("error al consumir la appi")
+                return
+            }
+            //si no hubo errores
+            if let datosSeguros = datos {
+                if let objClima = analizarJSON(datosClima: datosSeguros){
+                    delegado?.actualizarClima(objClima: objClima)
+                }
+            }
+        }
         //comenzar tarea
         tarea.resume()
         }//fin if let
-        
     }//fin realizar soli
     
-    func controladorFinalizacion(datos:Data?, respuesta:URLResponse?, error: Error?) {
-        
-        if error != nil {
+    func analizarJSON(datosClima: Data) -> ClimaModelo? {
+        let decodificador = JSONDecoder()
+        do{
+            let datosDecodificados = try decodificador.decode(DatosClima.self, from: datosClima)
+            print(datosDecodificados.name)
+            print(datosDecodificados.main.temp)
+            print(datosDecodificados.weather[0].id)
+            
+            let condicionId = datosDecodificados.weather[0].id
+            let nombreCiudad = datosDecodificados.name
+            let temperatura = datosDecodificados.main.temp
+            let humedad = datosDecodificados.main.humidity ?? 20
+            
+            let objClima = ClimaModelo(condicionID: condicionId, nombreCiudad: nombreCiudad, temperatura: temperatura, humedad: Double(humedad))
+            
+            return objClima
+            
+        }catch{
+            delegado?.huboError(error: error)
             print("error")
-            return
-        }
-        
-        //si no hubo errores
-        if let datosSeguros = datos {
-            let datosString = String(data: datosSeguros, encoding: .utf8)
-            print(datosString ?? "No hubo datos en la API")
+            return nil
         }
     }
 }
