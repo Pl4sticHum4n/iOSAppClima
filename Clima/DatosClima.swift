@@ -10,10 +10,11 @@ struct DatosClima: Decodable, Encodable {
 
 struct Main: Decodable, Encodable {
     let temp : Double
-    let humidity: Int?
+    let humidity: Int
     let feels_like: Double
 }
 
 struct Weather:Decodable, Encodable {
+    let description: String
     let id: Int
 }

@@ -16,6 +16,7 @@ struct ClimaManager {
     
     func obtenerClima(nombreCiudad: String) {
         let urlString = "\(climaUrl)&q=\(nombreCiudad)"
+        realizarSolicitud(urlString: urlString)
     }
     
     func  realizarSolicitud(urlString: String) {
@@ -26,7 +27,7 @@ struct ClimaManager {
         //asignar una tarea
         let tarea = sesion.dataTask(with: url) { (datos, respuesta, error) in
             if error != nil {
-                delegado?.huboError(error: error as! Error)
+                delegado?.huboError(error: error!)
                 print("error al consumir la appi")
                 return
             }
@@ -52,16 +53,17 @@ struct ClimaManager {
             
             let condicionId = datosDecodificados.weather[0].id
             let nombreCiudad = datosDecodificados.name
+            let descripcion = datosDecodificados.weather[0].description
             let temperatura = datosDecodificados.main.temp
             let humedad = datosDecodificados.main.humidity ?? 20
             
-            let objClima = ClimaModelo(condicionID: condicionId, nombreCiudad: nombreCiudad, temperatura: temperatura, humedad: Double(humedad))
+            let objClima = ClimaModelo(condicionID: condicionId, nombreCiudad: nombreCiudad, temperatura: temperatura, humedad: Double(humedad), description: descripcion)
             
             return objClima
             
         }catch{
             delegado?.huboError(error: error)
-            print("error")
+            print("error al analizar json")
             return nil
         }
     }

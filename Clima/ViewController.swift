@@ -8,7 +8,8 @@
 import UIKit
 
 class ViewController: UIViewController, UITextFieldDelegate {
-
+    
+    @IBOutlet weak var mensajeHumedad: UILabel!
     @IBOutlet weak var nombreUbicacion: UITextField!
     @IBOutlet weak var mensajeClima: UILabel!
     @IBOutlet weak var fondoClima: UIImageView!
@@ -26,7 +27,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func buscarButton(_ sender: UIButton) {
-        print(nombreUbicacion.text ?? "No se han detectado busquedas")
+        nombreUbicacion.endEditing(true)
         
     }
     
@@ -56,8 +57,10 @@ class ViewController: UIViewController, UITextFieldDelegate {
         if nombreUbicacion.text != ""{
             return true
         } else {
-            print("Debes ingresar una busqueda")
-            mensajeClima.text = "Debes ingresar una busqueda"
+            self.mensajeClima.text = "Debes ingresar una busqueda"
+            self.mensajeHumedad.text = "Nivel de humedad"
+            self.imagenClima.image = UIImage(systemName: "cloud")
+            self.fondoClima.image = UIImage(named: "fondo")
             return false
         }
         
@@ -74,12 +77,25 @@ class ViewController: UIViewController, UITextFieldDelegate {
 // MARK: climamanager delegado y sus mètodos para actualizar clima y mostrar el error
 extension ViewController: ClimaManagerDelegado{
     func actualizarClima(objClima: ClimaModelo) {
+        DispatchQueue.main.async {
+            print("Temperatura: \(objClima.temperaturaString)")
+            self.temperaturaLabel.text = "\(objClima.temperaturaString)"
+            self.mensajeClima.text = "El tiempo en \(objClima.nombreCiudad) es: \(objClima.description)"
+            self.mensajeHumedad.text = "Humedad: \(objClima.humedad)"
+            self.imagenClima.image = UIImage(systemName: objClima.nombreCondicion)
+            self.fondoClima.image = UIImage(named: objClima.fondoClima)
+        }
         print("Se actualizo el clima")
-        print(objClima.temperaturaString)
+        
     }
     
     func huboError(error: Error) {
-        print("Hubo error")
+        DispatchQueue.main.async {
+            self.mensajeClima.text = "No hay resultados"
+            self.mensajeHumedad.text = "Nivel de humedad"
+            self.imagenClima.image = UIImage(systemName: "cloud")
+            self.fondoClima.image = UIImage(named: "fondo")
+        }
     }
     
     
